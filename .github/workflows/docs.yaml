@@ -40,7 +40,9 @@ jobs:
 
       - name: Prepare gh-pages
         run: |
-          if [ -d gh-pages/.git ]; then
+          # Check if the checkout actually got the gh-pages branch
+          if cd gh-pages && git rev-parse --verify gh-pages 2>/dev/null; then
+            cd ..
             # Preserve the charts directory if it exists
             if [ -d gh-pages/charts ]; then
               cp -r gh-pages/charts /tmp/helm-charts-backup
@@ -51,11 +53,13 @@ jobs:
               cp -r /tmp/helm-charts-backup gh-pages/charts
             fi
           else
+            cd ..
             # First deploy — create orphan branch
-            mkdir -p gh-pages
+            rm -rf gh-pages
+            git clone --no-checkout "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
             cd gh-pages
-            git init --initial-branch=gh-pages
-            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+            git checkout --orphan gh-pages
+            git rm -rf . 2>/dev/null || true
             cd ..
             cp -r site/* gh-pages/
           fi
@@ -68,4 +72,4 @@ jobs:
           git add -A
           git diff --cached --quiet && exit 0
           git commit -m "Deploy documentation"
-          git push -u origin gh-pages
+          git push origin gh-pages
