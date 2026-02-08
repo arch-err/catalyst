@@ -53,6 +53,13 @@ jobs:
 
       - name: Prepare gh-pages chart dir
         run: |
+          if [ ! -d gh-pages/.git ]; then
+            mkdir -p gh-pages
+            cd gh-pages
+            git init --initial-branch=gh-pages
+            git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+            cd ..
+          fi
           mkdir -p gh-pages/charts
           cp .helm-packages/*.tgz gh-pages/charts/
 
@@ -74,4 +81,4 @@ jobs:
           git add charts/
           git diff --cached --quiet && exit 0
           git commit -m "Update Helm chart packages"
-          git push
+          git push -u origin gh-pages

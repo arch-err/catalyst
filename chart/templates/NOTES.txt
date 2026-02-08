@@ -1,4 +1,4 @@
-Workshop has been deployed!
+Catalyst has been deployed!
 
 {{- if .Values.ingress.enabled }}
 
@@ -11,7 +11,7 @@ Make sure your DNS or /etc/hosts resolves {{ .Values.ingress.host }} to your ing
 
 To access the application, forward the service port:
 
-  kubectl port-forward svc/{{ include "workshop.fullname" . }} 8080:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+  kubectl port-forward svc/{{ include "catalyst.fullname" . }} 8080:{{ .Values.service.port }} -n {{ .Release.Namespace }}
 
 Then visit http://localhost:8080
 {{- end }}
@@ -20,17 +20,17 @@ Then visit http://localhost:8080
 
 IMPORTANT: This chart expects pre-existing secrets in the {{ .Release.Namespace }} namespace:
 
-  1. "workshop-secrets" with keys: WORKSHOP_SECRET, COOKIE_SECRET
-  2. "{{ include "workshop.sshKeySecretName" . }}" with the SSH private key
+  1. "catalyst-secrets" with keys: CATALYST_SECRET, COOKIE_SECRET
+  2. "{{ include "catalyst.sshKeySecretName" . }}" with the SSH private key
 
 Create them before the pods will start successfully:
 
-  kubectl create secret generic workshop-secrets \
-    --from-literal=WORKSHOP_SECRET=<your-secret> \
+  kubectl create secret generic catalyst-secrets \
+    --from-literal=CATALYST_SECRET=<your-secret> \
     --from-literal=COOKIE_SECRET=<your-cookie-secret> \
     -n {{ .Release.Namespace }}
 
-  kubectl create secret generic {{ include "workshop.sshKeySecretName" . }} \
+  kubectl create secret generic {{ include "catalyst.sshKeySecretName" . }} \
     --from-file=id_ed25519=<path-to-your-ssh-key> \
     -n {{ .Release.Namespace }}
 {{- end }}

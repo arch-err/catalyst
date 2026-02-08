@@ -40,18 +40,24 @@ jobs:
 
       - name: Prepare gh-pages
         run: |
-          # Preserve the charts directory if it exists
-          if [ -d gh-pages/charts ]; then
-            cp -r gh-pages/charts /tmp/helm-charts-backup
-          fi
-
-          # Replace gh-pages content with built docs
-          rm -rf gh-pages/*
-          cp -r site/* gh-pages/
-
-          # Restore charts directory
-          if [ -d /tmp/helm-charts-backup ]; then
-            cp -r /tmp/helm-charts-backup gh-pages/charts
+          if [ -d gh-pages/.git ]; then
+            # Preserve the charts directory if it exists
+            if [ -d gh-pages/charts ]; then
+              cp -r gh-pages/charts /tmp/helm-charts-backup
+            fi
+            rm -rf gh-pages/*
+            cp -r site/* gh-pages/
+            if [ -d /tmp/helm-charts-backup ]; then
+              cp -r /tmp/helm-charts-backup gh-pages/charts
+            fi
+          else
+            # First deploy — create orphan branch
+            mkdir -p gh-pages
+            cd gh-pages
+            git init --initial-branch=gh-pages
+            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+            cd ..
+            cp -r site/* gh-pages/
           fi
 
       - name: Deploy to gh-pages
@@ -62,4 +68,4 @@ jobs:
           git add -A
           git diff --cached --quiet && exit 0
           git commit -m "Deploy documentation"
-          git push
+          git push -u origin gh-pages
