@@ -1,0 +1,72 @@
+site_name: Catalyst
+site_description: From quick idea capture to full project build, powered by Claude Code
+site_url: ""  # Set by CI or override with your GitHub Pages URL
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: blue
+    accent: light blue
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - content.tabs.link
+    - search.highlight
+    - toc.follow
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Prerequisites: getting-started/prerequisites.md
+    - Installation: getting-started/installation.md
+    - Configuration: getting-started/configuration.md
+  - Architecture:
+    - architecture/index.md
+    - Backend: architecture/backend.md
+    - Frontend: architecture/frontend.md
+    - Claude Integration: architecture/claude-integration.md
+  - Deployment:
+    - deployment/index.md
+    - Docker: deployment/docker.md
+    - Kubernetes: deployment/kubernetes.md
+    - Helm Values Reference: deployment/helm-values.md
+  - Development:
+    - development/index.md
+    - Project Structure: development/project-structure.md
+    - Local Development: development/local-dev.md
+    - Contributing: development/contributing.md
+  - API Reference:
+    - api/index.md
+    - REST API: api/rest.md
+    - WebSocket Protocol: api/websocket.md
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+
+plugins:
+  - search

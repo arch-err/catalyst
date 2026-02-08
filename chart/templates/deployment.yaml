@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "catalyst.fullname" . }}
+  labels:
+    {{- include "catalyst.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "catalyst.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "catalyst.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          env:
+            - name: PORT
+              value: {{ .Values.containerPort | quote }}
+            - name: NODE_ENV
+              value: "production"
+            - name: CATALYST_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "catalyst.secretsName" . }}
+                  key: CATALYST_SECRET
+            - name: COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "catalyst.secretsName" . }}
+                  key: COOKIE_SECRET
+            - name: SSH_KEY_PATH
+              value: {{ .Values.ssh.keyPath | quote }}
+            - name: SSH_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "catalyst.configmapName" . }}
+                  key: SSH_HOST
+            - name: SSH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "catalyst.configmapName" . }}
+                  key: SSH_PORT
+            - name: SSH_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "catalyst.configmapName" . }}
+                  key: SSH_USER
+            - name: IDEAS_BASE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "catalyst.configmapName" . }}
+                  key: IDEAS_BASE_PATH
+          volumeMounts:
+            - name: ssh-key
+              mountPath: /secrets/ssh
+              readOnly: true
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: ssh-key
+          secret:
+            secretName: {{ include "catalyst.sshKeySecretName" . }}
+            defaultMode: 0400

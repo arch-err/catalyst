@@ -1,0 +1,65 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install mkdocs-material
+        run: pip install -r docs/requirements.txt
+
+      - name: Build docs
+        run: mkdocs build --strict
+
+      # Deploy to gh-pages branch, preserving existing /charts dir
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+        continue-on-error: true
+
+      - name: Prepare gh-pages
+        run: |
+          # Preserve the charts directory if it exists
+          if [ -d gh-pages/charts ]; then
+            cp -r gh-pages/charts /tmp/helm-charts-backup
+          fi
+
+          # Replace gh-pages content with built docs
+          rm -rf gh-pages/*
+          cp -r site/* gh-pages/
+
+          # Restore charts directory
+          if [ -d /tmp/helm-charts-backup ]; then
+            cp -r /tmp/helm-charts-backup gh-pages/charts
+          fi
+
+      - name: Deploy to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Deploy documentation"
+          git push

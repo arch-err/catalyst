@@ -1,0 +1,74 @@
+{{/*
+Expand the name of the chart.
+*/}}
+{{- define "catalyst.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name.
+*/}}
+{{- define "catalyst.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "catalyst.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Common labels
+*/}}
+{{- define "catalyst.labels" -}}
+helm.sh/chart: {{ include "catalyst.chart" . }}
+{{ include "catalyst.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "catalyst.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "catalyst.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+ConfigMap name
+*/}}
+{{- define "catalyst.configmapName" -}}
+{{ include "catalyst.fullname" . }}-config
+{{- end }}
+
+{{/*
+Secrets name
+*/}}
+{{- define "catalyst.secretsName" -}}
+{{- if .Values.secrets.useExisting -}}
+catalyst-secrets
+{{- else -}}
+{{ include "catalyst.fullname" . }}-secrets
+{{- end -}}
+{{- end }}
+
+{{/*
+SSH key secret name
+*/}}
+{{- define "catalyst.sshKeySecretName" -}}
+{{ .Values.ssh.existingKeySecret | default (printf "%s-ssh-key" (include "catalyst.fullname" .)) }}
+{{- end }}

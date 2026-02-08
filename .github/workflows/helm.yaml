@@ -1,0 +1,77 @@
+name: Helm Chart
+
+on:
+  push:
+    branches: [main]
+    paths: ["chart/**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  pages: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - run: helm lint chart/
+
+  package-and-push:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: azure/setup-helm@v4
+
+      - name: Package chart
+        run: helm package chart/ --destination .helm-packages/
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push chart to GHCR
+        run: |
+          for pkg in .helm-packages/*.tgz; do
+            helm push "$pkg" oci://ghcr.io/${{ github.repository_owner }}/charts
+          done
+
+      # Also publish to GitHub Pages for `helm repo add` usage
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+        continue-on-error: true
+
+      - name: Prepare gh-pages chart dir
+        run: |
+          mkdir -p gh-pages/charts
+          cp .helm-packages/*.tgz gh-pages/charts/
+
+      - name: Generate Helm repo index
+        run: |
+          cd gh-pages/charts
+          REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/charts"
+          if [ -f index.yaml ]; then
+            helm repo index . --url "$REPO_URL" --merge index.yaml
+          else
+            helm repo index . --url "$REPO_URL"
+          fi
+
+      - name: Push chart to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add charts/
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Helm chart packages"
+          git push

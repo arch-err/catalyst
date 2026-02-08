@@ -1,0 +1,19 @@
+services:
+  catalyst:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - CATALYST_SECRET=${CATALYST_SECRET:-dev-secret}
+      - COOKIE_SECRET=${COOKIE_SECRET:-dev-cookie-secret}
+      - SSH_HOST=${SSH_HOST:-host.docker.internal}
+      - SSH_PORT=${SSH_PORT:-22}
+      - SSH_USER=${SSH_USER:-user}
+      - SSH_KEY_PATH=/secrets/ssh/id_ed25519
+      - IDEAS_BASE_PATH=${IDEAS_BASE_PATH:-~/catalyst/ideas}
+    volumes:
+      - ${SSH_KEY_FILE:-~/.ssh/id_ed25519}:/secrets/ssh/id_ed25519:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

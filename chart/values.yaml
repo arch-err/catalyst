@@ -1,0 +1,70 @@
+replicaCount: 1
+
+image:
+  repository: catalyst
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+containerPort: 3001
+
+ingress:
+  enabled: true
+  className: nginx
+  host: catalyst.local
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/websocket-services: "catalyst"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+
+ssh:
+  host: "dev-vm.local"
+  port: "22"
+  user: "user"
+  ideasBasePath: "~/catalyst/ideas"
+  keyPath: "/secrets/ssh/id_ed25519"
+  # Name of the externally-managed secret containing the SSH private key
+  existingKeySecret: "catalyst-ssh-key"
+
+secrets:
+  # When true, the chart will NOT create the Secret resource.
+  # You must pre-create "catalyst-secrets" (and "catalyst-ssh-key") yourself.
+  useExisting: true
+  # Only used when useExisting is false:
+  catalystSecret: "CHANGE_ME"
+  cookieSecret: "CHANGE_ME"
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+networkPolicy:
+  enabled: true
+  ingressNamespace: ingress-nginx
+  sshEgressCidr: "0.0.0.0/0"
+
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: 3001
+  initialDelaySeconds: 10
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: 3001
+  initialDelaySeconds: 5
+  periodSeconds: 10

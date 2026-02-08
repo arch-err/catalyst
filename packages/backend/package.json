@@ -1,0 +1,32 @@
+{
+  "name": "@catalyst/backend",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "tsc",
+    "start": "bun dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@catalyst/shared": "workspace:*",
+    "cookie": "^1.1.1",
+    "cookie-parser": "1.4.7",
+    "express": "4.22.1",
+    "slugify": "1.6.6",
+    "ssh2": "1.17.0",
+    "uuid": "13.0.0",
+    "ws": "8.19.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.0",
+    "@types/express-serve-static-core": "^5.1.1",
+    "@types/node": "^22.0.0",
+    "@types/ssh2": "^1.15.5",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.14",
+    "typescript": "^5.7.0"
+  }
+}
