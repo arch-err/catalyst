@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  catalyst:
+  - apiVersion: v2
+    appVersion: 0.0.1
+    created: "2026-02-08T12:13:46.629436227Z"
+    description: A Helm chart for the Catalyst application
+    digest: 14a2f1720a1563e7f2f5d296a5a6815a86502085b07dd6e4f278d76439a6c4e5
+    name: catalyst
+    type: application
+    urls:
+    - https://arch-err.github.io/catalyst/charts/catalyst-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-02-08T12:13:46.628945193Z"
